@@ -5,44 +5,56 @@
 	<title>psenough.github.io</title>
 </head>	
 <body>
-List of my projects browsable at github.io:
+List of my github.io projects:
 <div id="my-github-projects"/>
 </body>
 <script src="http://ajax.microsoft.com/ajax/jquery/jquery-1.4.2.min.js" type="text/javascript"></script>
-<script src="/javascripts/git.js" type="text/javascript"></script>
 <script type="text/javascript">
 
-jQuery.githubUser = function(username, callback) {
-   jQuery.getJSON('https://api.github.com/users/'+username+'/repos?callback=?',callback)
-}
+var list = $('<dl/>');
+
+var page = 1;
+var username = 'psenough';
+
+var mycallback = function(data) {
+
+	//var thiscallback = this;
+	console.log('starting callback');
+	
+	console.log(data);
+	var repos = data.data; // JSON Parsing
+	
+	//console.log(data.meta['Link']);
+	for (var i=0; i<data.meta['Link'].length; i++) {
+		if (data.meta['Link'][i][1]['rel'] == 'next') {
+			page += 1;
+			jQuery.getJSON('https://api.github.com/users/'+username+'/repos?page='+page+'&callback=?', mycallback);
+		}
+	}
  
-jQuery.fn.loadRepositories = function(username) {
-    this.html("<span>Querying GitHub for " + username +"'s repositories...</span>");
-     
-    var target = this;
-    $.githubUser(username, function(data) {
-        var repos = data.data; // JSON Parsing
-        sortByName(repos);    
-     
-        var list = $('<dl/>');
-        target.empty().append(list);
-        $(repos).each(function() {
-            if ((this.name != (username.toLowerCase()+'.github.com')) && (this.default_branch == "gh-pages")) {
-                list.append('<dt><a href="'+ (this.homepage?this.homepage:this.html_url) +'">' + this.name + '</a></dt>');
-                list.append('<dd>' + this.description +'</dd>');
-            }
-        });      
-      });
-      
-    function sortByName(repos) {
-        repos.sort(function(a,b) {
-        return a.name - b.name;
-       });
-    }
+	$(repos).each(function() {
+		if (this.has_pages == true) {
+			list.append('<dt><a href="'+ (this.homepage?this.homepage:this.html_url) +'">' + this.name + '</a></dt>');
+			list.append('<dd>' + this.description +'</dd>');
+		}
+	});   
+	
+	return;
 };
 
-    $(function() {
-        $("#my-github-projects").loadRepositories("psenough");
-    });
+jQuery.fn.loadRepositories = function() {
+    this.html("<span>Querying GitHub for " + username +"'s repositories...</span>");
+		
+    var target = this;
+    target.empty().append(list);
+	
+	console.log('starting');
+	jQuery.getJSON('https://api.github.com/users/'+username+'/repos?page='+page+'&callback=?', mycallback);
+};
+
+$(function() {
+	$("#my-github-projects").loadRepositories();
+});
+
 </script>
 </html>
