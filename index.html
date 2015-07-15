@@ -34,7 +34,7 @@ var mycallback = function(data) {
  
 	$(repos).each(function() {
 		if (this.has_pages == true) {
-			list.append('<dt><a href="'+ (this.homepage?this.homepage:this.html_url) +'">' + this.name + '</a></dt>');
+			list.append('<dt><a href="https://'+username+'.github.io/'+ this.name +'">' + this.name + '</a></dt>');
 			list.append('<dd>' + this.description +'</dd>');
 		}
 	});   
